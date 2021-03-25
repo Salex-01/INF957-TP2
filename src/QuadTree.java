@@ -126,7 +126,7 @@ public class QuadTree {
         nodes.remove(n);
     }
 
-    public Iterator<Node> iterator() {
+    public QTIterator iterator() {
         return new QTIterator(this);
     }
 
@@ -178,7 +178,7 @@ public class QuadTree {
         private void initialize() {
             if (qti[0] == null) {
                 for (int k = 0; k < 4; k++) {
-                    qti[k] = new QTIterator(qt.q[k]);
+                    qti[k] = qt.q[k].iterator();
                 }
             }
         }

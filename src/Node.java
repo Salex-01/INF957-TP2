@@ -1,14 +1,19 @@
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
-public class Node {
+public class Node extends Thread {
     double x;
     double y;
+    int id;
     List<Node> connections = new ArrayList<>();
+    int score = 0;
+    final LinkedList<Message> messages = new LinkedList<>();
 
-    public Node(double x1, double y1) {
+    public Node(int ID, double x1, double y1) {
         x = x1;
         y = y1;
+        id = ID;
     }
 
     public double distance(Node n) {
@@ -37,6 +42,27 @@ public class Node {
         } else {
             x += x1;
             y += y1;
+        }
+    }
+
+    public void add(Message m) {
+        synchronized (messages) {
+            messages.addLast(m);
+        }
+    }
+
+    @Override
+    @SuppressWarnings("InfiniteLoopStatement")
+    public void run() {
+        while (true) {
+            if (messages.size() > 0) {
+                
+            } else {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException ignored) {
+                }
+            }
         }
     }
 }
