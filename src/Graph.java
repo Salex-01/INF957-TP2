@@ -25,7 +25,7 @@ public class Graph extends Thread {
         nodes = new Node[nN];
         Node n;
         for (int i = 0; i < nNodes; i++) {
-            n = new Node(i + 1, r.nextDouble() % Math.sqrt(nNodes), r.nextDouble() % Math.sqrt(nNodes));
+            n = new Node(i + 1, r.nextDouble() % Math.sqrt(nNodes), r.nextDouble() % Math.sqrt(nNodes), nN);
             nodesQT.add(n);
             nodes[i] = n;
         }
@@ -87,12 +87,12 @@ public class Graph extends Thread {
 
     public void sendMessage(Node a, Node b) {
         Message m = new Message(a, b);
-        a.add(m);
+        a.addMessage(m);
         lastSent = m;
     }
 
     public void sendMessage(Message m) {
-        m.source.add(m);
+        m.source.addMessage(m);
         lastSent = m;
     }
 
@@ -157,7 +157,7 @@ public class Graph extends Thread {
             sendMessage(a, b);
             nMessages--;
         }
-        for(Node n:nodes){
+        for (Node n : nodes) {
             n.start();
         }
         while (true) {
