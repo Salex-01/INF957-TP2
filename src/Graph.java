@@ -19,6 +19,10 @@ public class Graph extends Thread {
     String transmissionMode;
     double size;
     boolean forceDisplay;
+    double displayW;
+    double displayH;
+    double minDX;
+    double minDY;
     private boolean sendMessageContinuous = false;
 
     public Graph(int nN, double dmax, double s, Canvas ca, int nM, boolean fd, String tm) {
@@ -37,18 +41,49 @@ public class Graph extends Thread {
         LinkedList<Node> e = evaluate();
         while (e.size() > 0) {
             for (Node n1 : e) {
-                moveNode(n1, (r.nextDouble() * 0.8 + 0.1) * size, (r.nextDouble() * 0.8 + 0.1) * size, true);
+                moveNode(n1, (r.nextDouble() * 0.8 + 0.1) * size, (r.nextDouble() * 0.8 + 0.1) * size, true, false);
             }
             e = evaluate();
         }
+        resizeDisplay();
         transmissionMode = tm;
         if (transmissionMode.contentEquals("r")) {
             routing = new Semaphore(0);
         }
     }
 
-    public void moveNode(Node n, double x1, double y1, boolean moveTo) {
+    private void resizeDisplay() {
+        Iterator<Node> i = nodesQT.iterator();
+        double minx = Double.MAX_VALUE;
+        double maxx = Double.MIN_VALUE;
+        double miny = Double.MAX_VALUE;
+        double maxy = Double.MIN_VALUE;
+        while (i.hasNext()) {
+            Node n = i.next();
+            if (n.x < minx) {
+                minx = n.x;
+            }
+            if (n.x > maxx) {
+                maxx = n.x;
+            }
+            if (n.y < miny) {
+                miny = n.y;
+            }
+            if (n.y > maxy) {
+                maxy = n.y;
+            }
+        }
+        minDX = minx;
+        minDY = miny;
+        displayW = (maxx - minx) * 1.1;
+        displayH = (maxy - miny) * 1.1;
+    }
+
+    public void moveNode(Node n, double x1, double y1, boolean moveTo, boolean resize) {
         nodesQT.moveNode(n, x1, y1, moveTo);
+        if (resize) {
+            resizeDisplay();
+        }
     }
 
     private LinkedList<Node> evaluate() {
@@ -138,21 +173,21 @@ public class Graph extends Thread {
         while (i.hasNext()) {
             Node n = i.next();
             for (Node n1 : n.connections) {
-                g.drawLine((int) ((n.x * w) / size), (int) ((n.y * h) / size), (int) ((n1.x * w) / size), (int) ((n1.y * h) / size));
+                g.drawLine((int) (((n.x - minDX) * w) / displayW + 0.0455 * w), (int) (((n.y - minDY) * h) / displayH + 0.0455 * h), (int) (((n1.x - minDX) * w) / displayW + 0.0455 * w), (int) (((n1.y - minDY) * h) / displayH + 0.0455 * h));
             }
         }
         g.setColor(Color.GRAY);
         i = nodesQT.iterator();
         while (i.hasNext()) {
             Node n = i.next();
-            g.fillOval((int) ((n.x * w) / size) - 15, (int) ((n.y * h) / size) - 15, 30, 30);
+            g.fillOval((int) (((n.x - minDX) * w) / displayW + 0.0455 * w) - 15, (int) (((n.y - minDY) * h) / displayH + 0.0455 * h) - 15, 30, 30);
         }
         g.setColor(Color.BLACK);
         i = nodesQT.iterator();
         while (i.hasNext()) {
             Node n = i.next();
-            g.drawString(String.valueOf(n.id), (int) ((n.x * w) / size) - 4 * (Math.max(0, (int) Math.log10(n.id)) + 1), (int) ((n.y * h) / size) - 2);
-            g.drawString(String.valueOf(n.score), (int) ((n.x * w) / size) - 4 * (Math.max(0, (int) Math.log10(n.score)) + 1), (int) ((n.y * h) / size) + 12);
+            g.drawString(String.valueOf(n.id), (int) (((n.x - minDX) * w) / displayW + 0.0455 * w) - 4 * (Math.max(0, (int) Math.log10(n.id)) + 1), (int) (((n.y - minDY) * h) / displayH + 0.0455 * h) - 2);
+            g.drawString(String.valueOf(n.score), (int) (((n.x - minDX) * w) / displayW + 0.0455 * w) - 4 * (Math.max(0, (int) Math.log10(n.score)) + 1), (int) (((n.y - minDY) * h) / displayH + 0.0455 * h) + 12);
         }
     }
 
