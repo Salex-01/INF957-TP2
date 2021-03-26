@@ -57,7 +57,7 @@ public class Main4 {
             System.exit(-1);
         }
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-        Frame f = new Frame();
+        Frame f = new Frame("Graph Mailer");
         f.setBounds((int) (d.getWidth() * 0.1), (int) (d.getHeight() * 0.1), (int) (d.getWidth() * 0.8), (int) (d.getHeight() * 0.8));
         Container c = new Container();
         c.setBounds(0, 0, f.getWidth(), f.getHeight() - 30);
@@ -70,6 +70,8 @@ public class Main4 {
             new MessageButtonMultiple(c, this, 100);
             new MessageButtonMultiple(c, this, 1000);
             new MessageButtonMultiple(c, this, 10000);
+            new MessageButtonContinuous(c,this);
+            new LeaderboardButton(c,this);
         }
         System.out.println("Création du graph");
         long start = System.currentTimeMillis();

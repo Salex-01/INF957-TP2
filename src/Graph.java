@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
@@ -18,6 +19,7 @@ public class Graph extends Thread {
     String transmissionMode;
     double size;
     boolean forceDisplay;
+    private boolean sendMessageContinuous = false;
 
     public Graph(int nN, double dmax, double s, Canvas ca, int nM, boolean fd, String tm) {
         nNodes = nN;
@@ -28,14 +30,14 @@ public class Graph extends Thread {
         forceDisplay = fd;
         nodesQT = new QuadTree((int) (Math.log(nNodes) / Math.log(100)), 0, 0, size, size, dMax);
         for (int i = 0; i < nN; i++) {
-            Node n = new Node(this, i + 1, r.nextDouble() * size, r.nextDouble() * size, nNodes, tm);
+            Node n = new Node(this, i + 1, (r.nextDouble() * 0.8 + 0.1) * size, (r.nextDouble() * 0.8 + 0.1) * size, nNodes, tm);
             nodesQT.add(n);
             nodes.add(i, n);
         }
         LinkedList<Node> e = evaluate();
         while (e.size() > 0) {
             for (Node n1 : e) {
-                moveNode(n1, r.nextDouble() * size, r.nextDouble() * size, true);
+                moveNode(n1, (r.nextDouble() * 0.8 + 0.1) * size, (r.nextDouble() * 0.8 + 0.1) * size, true);
             }
             e = evaluate();
         }
@@ -149,7 +151,8 @@ public class Graph extends Thread {
         i = nodesQT.iterator();
         while (i.hasNext()) {
             Node n = i.next();
-            g.drawString(String.valueOf(n.score), (int) ((n.x * w) / size) - 12, (int) ((n.y * h) / size) + 5);
+            g.drawString(String.valueOf(n.id), (int) ((n.x * w) / size) - 4 * (Math.max(0, (int) Math.log10(n.id)) + 1), (int) ((n.y * h) / size) - 2);
+            g.drawString(String.valueOf(n.score), (int) ((n.x * w) / size) - 4 * (Math.max(0, (int) Math.log10(n.score)) + 1), (int) ((n.y * h) / size) + 12);
         }
     }
 
@@ -169,18 +172,32 @@ public class Graph extends Thread {
             n.start();
         }
         if (transmissionMode.contentEquals("r")) {
+            long start = System.currentTimeMillis();
+            System.out.println("Initialisation des tables de routage");
             try {
                 routing.acquire(nNodes);
             } catch (InterruptedException ignored) {
             }
+            System.out.println("Tables de routage initialisées en " + (System.currentTimeMillis() - start) + " ms");
             for (Node n : nodes) {
                 n.routingSync.release(1);
             }
         }
         while (true) {
+            long start = System.currentTimeMillis();
             draw();
+            if (sendMessageContinuous) {
+                for (int i = 0; i < 10000; i++) {
+                    Node a = getRandomNode();
+                    Node b;
+                    do {
+                        b = getRandomNode();
+                    } while (a == b);
+                    sendMessage(a, b);
+                }
+            }
             try {
-                Thread.sleep(1000);
+                Thread.sleep(Math.max(1000 - (System.currentTimeMillis() - start), 100));
             } catch (InterruptedException ignored) {
             }
         }
@@ -188,7 +205,27 @@ public class Graph extends Thread {
 
     public void terminate() {
         nodes.sort((o1, o2) -> o2.score - o1.score);
+        JOptionPane.showMessageDialog(null, "Gagnant : " + nodes.get(0) + "\nTaux de perte : " + ((lostMessages * 1.) / totalMessages) + " (" + lostMessages + " sur " + totalMessages + ")");
         System.out.println("Gagnant : " + nodes.get(0));
-        System.out.println("taux de perte : " + ((lostMessages * 1.) / totalMessages));
+        System.out.println("Taux de perte : " + ((lostMessages * 1.) / totalMessages) + " (" + lostMessages + " sur " + totalMessages + ")");
+    }
+
+    public boolean toggleContinuous() {
+        sendMessageContinuous = !sendMessageContinuous;
+        return sendMessageContinuous;
+    }
+
+    public void stopContinuous() {
+        sendMessageContinuous = false;
+    }
+
+    public void showLeaderboard() {
+        nodes.sort((o1, o2) -> o2.score - o1.score);
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; (i < 10 && i < nodes.size()); i++) {
+            Node n = nodes.get(i);
+            s.append(i + 1).append(": Node ").append(n.id).append(", score = ").append(n.score).append("\n");
+        }
+        JOptionPane.showMessageDialog(null, s, "Leaderboard", JOptionPane.PLAIN_MESSAGE);
     }
 }

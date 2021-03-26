@@ -13,7 +13,8 @@ public class Node extends Thread {
     final Semaphore s = new Semaphore(0);
     String transmissionMode;
     HashMap<Node, Pair<Node, Double>> routingTable;
-    private final LinkedList<RouteMessage> routeMessages = new LinkedList<>();
+    private final LinkedList<RoutingMessage> routingMessages = new LinkedList<>();
+    private final Semaphore routingMessagesSync = new Semaphore(1);
     Semaphore routingSync;
 
     public Node(Graph g1, int ID, double x1, double y1, int nN, String tm) {
@@ -30,7 +31,7 @@ public class Node extends Thread {
     }
 
     public double distance(Node n) {
-        return (x - n.x) * (x - n.x) + (y - n.y) * (y - n.y);
+        return Math.sqrt((x - n.x) * (x - n.x) + (y - n.y) * (y - n.y));
     }
 
     public void connect(Node... n1) {
@@ -72,31 +73,62 @@ public class Node extends Thread {
         }
     }
 
-    private boolean addRoute(RouteMessage rm) {
-        final boolean[] tem = new boolean[1];
-        Pair<Node, Double> route = routingTable.computeIfAbsent(rm.destination, node -> {
-            tem[0] = true;
-            return new Pair<>(rm.via, rm.distance);
-        });
-        if (route.value > rm.distance) {
+    private boolean addRoute(RoutingMessage rm) {
+        Pair<Node, Double> route = routingTable.get(rm.destination);
+        if (route == null) {
+            route = new Pair<>(rm.via, rm.distance);
+            routingTable.put(rm.destination, route);
+            return true;
+        }
+        if (rm.distance < route.value) {
             route.key = rm.via;
             route.value = rm.distance;
             return true;
         }
-        return tem[0];
+        return false;
+    }
+
+    private void processNewRoutes() {
+        boolean tem;
+        synchronized (routingMessages) {
+            tem = routingMessages.isEmpty();
+        }
+        while (!tem) {
+            RoutingMessage rm;
+            synchronized (routingMessages) {
+                try {
+                    rm = routingMessages.removeFirst();
+                } catch (NoSuchElementException e) {
+                    // Pas censé arriver
+                    return;
+                }
+            }
+            if (rm.destination != this) {
+                if (addRoute(rm)) {
+                    for (Node n : connections) {
+                        synchronized (n.routingMessages) {
+                            n.routingMessages.addLast(new RoutingMessage(rm.destination, this, rm.distance + distance(n)));
+                        }
+                    }
+                }
+            }
+            synchronized (routingMessages) {
+                tem = routingMessages.isEmpty();
+            }
+        }
     }
 
     @Override
     @SuppressWarnings({"InfiniteLoopStatement", "SynchronizeOnNonFinalField", "BusyWait"})
     public void run() {
+        boolean tem;
         if (transmissionMode.contentEquals("r")) {
             for (Node n : connections) {
-                routeMessages.add(new RouteMessage(n, n, distance(n)));
+                routingMessages.add(new RoutingMessage(n, n, distance(n)));
             }
             while (routingTable.size() < nNodes - 1) {
-                boolean tem;
-                synchronized (routeMessages) {
-                    tem = routeMessages.isEmpty();
+                synchronized (routingMessages) {
+                    tem = routingMessages.isEmpty();
                 }
                 if (tem) {
                     try {
@@ -104,27 +136,7 @@ public class Node extends Thread {
                     } catch (InterruptedException ignored) {
                     }
                 } else {
-                    synchronized (routeMessages) {
-                        tem = routeMessages.isEmpty();
-                    }
-                    while (!tem) {
-                        RouteMessage rm;
-                        synchronized (routeMessages) {
-                            rm = routeMessages.removeFirst();
-                        }
-                        if (rm.destination != this) {
-                            if (addRoute(rm)) {
-                                for (Node n : connections) {
-                                    synchronized (n.routeMessages) {
-                                        n.routeMessages.addLast(new RouteMessage(rm.destination, this, rm.distance + distance(n)));
-                                    }
-                                }
-                            }
-                        }
-                        synchronized (routeMessages) {
-                            tem = routeMessages.isEmpty();
-                        }
-                    }
+                    processNewRoutes();
                 }
             }
             synchronized (g.routing) {
@@ -135,7 +147,6 @@ public class Node extends Thread {
             } catch (InterruptedException ignored) {
             }
         }
-        boolean tem;
         while (true) {
             tem = false;
             synchronized (messages) {
@@ -152,6 +163,7 @@ public class Node extends Thread {
                 } catch (InterruptedException ignored) {
                 }
             }
+            processNewRoutes();
             Message m;
             synchronized (messages) {
                 m = messages.removeFirst();
@@ -268,15 +280,20 @@ public class Node extends Thread {
         return "Node " + id + ", score = " + score + ", position = " + x + "," + y;
     }
 
-    private static class RouteMessage {
+    private static class RoutingMessage {
         Node destination;
         Node via;
         double distance;
 
-        private RouteMessage(Node dest, Node v, double d) {
+        private RoutingMessage(Node dest, Node v, double d) {
             destination = dest;
             via = v;
             distance = d;
+        }
+
+        @Override
+        public String toString() {
+            return destination.id + " via " + via.id + " en " + distance;
         }
     }
 }

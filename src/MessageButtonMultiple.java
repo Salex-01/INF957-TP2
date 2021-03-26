@@ -7,7 +7,7 @@ public class MessageButtonMultiple extends MessageButton {
     public MessageButtonMultiple(Container c1, Main4 m, int n1) {
         super(c1, m, (int) Math.log10(n1) + 2);
         n = n1;
-        setLabel(n1 + " aléatoires");
+        setLabel(n1 + (n1 > 1 ? " aléatoires" : " aléatoire"));
     }
 
     @Override
