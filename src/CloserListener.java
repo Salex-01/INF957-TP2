@@ -4,9 +4,11 @@ import java.awt.event.WindowListener;
 
 public class CloserListener implements WindowListener {
     Frame f;
+    Graph g;
 
-    public CloserListener(Frame f1) {
+    public CloserListener(Frame f1, Graph g1) {
         f = f1;
+        g = g1;
     }
 
     @Override
@@ -15,7 +17,7 @@ public class CloserListener implements WindowListener {
 
     @Override
     public void windowClosing(WindowEvent event) {
-        f.dispose();
+        g.terminate();
         System.exit(0);
     }
 

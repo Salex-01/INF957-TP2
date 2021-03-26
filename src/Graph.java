@@ -1,40 +1,47 @@
 import java.awt.*;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.Semaphore;
 
 public class Graph extends Thread {
-    int nN;
+    int nNodes;
     double dMax;
     int nMessages;
     QuadTree nodesQT;
-    Node[] nodes;
+    List<Node> nodes = new ArrayList<>();
     Random r = new Random();
     Message lastSent = null;
     Canvas c;
+    int totalMessages = 0;
+    Integer lostMessages = 0;
+    Semaphore routing;
+    String transmissionMode;
+    double size;
+    boolean forceDisplay;
 
-    public Graph(int nNodes, double dmax, double s, Canvas ca, int nM) {
+    public Graph(int nN, double dmax, double s, Canvas ca, int nM, boolean fd, String tm) {
+        nNodes = nN;
+        dMax = dmax;
+        size = (s > 0 ? s : Math.sqrt(nNodes));
         c = ca;
         nMessages = nM;
-        if (s > 0) {
-            nodesQT = new QuadTree((int) (Math.log(nN) / Math.log(100)), 0, 0, s, s, dMax);
-        } else {
-            nodesQT = new QuadTree((int) (Math.log(nN) / Math.log(100)), 0, 0, Math.sqrt(nN), Math.sqrt(nN), dMax);
-        }
-        nN = nNodes;
-        dMax = dmax;
-        nodes = new Node[nN];
-        Node n;
-        for (int i = 0; i < nNodes; i++) {
-            n = new Node(i + 1, r.nextDouble() % Math.sqrt(nNodes), r.nextDouble() % Math.sqrt(nNodes), nN);
+        forceDisplay = fd;
+        nodesQT = new QuadTree((int) (Math.log(nNodes) / Math.log(100)), 0, 0, size, size, dMax);
+        for (int i = 0; i < nN; i++) {
+            Node n = new Node(this, i + 1, r.nextDouble() * size, r.nextDouble() * size, nNodes, tm);
             nodesQT.add(n);
-            nodes[i] = n;
+            nodes.add(i, n);
         }
         LinkedList<Node> e = evaluate();
         while (e.size() > 0) {
             for (Node n1 : e) {
-                moveNode(n1, r.nextDouble() % Math.sqrt(nNodes), r.nextDouble() % Math.sqrt(nNodes), true);
+                moveNode(n1, r.nextDouble() * size, r.nextDouble() * size, true);
             }
             e = evaluate();
+        }
+        transmissionMode = tm;
+        if (transmissionMode.contentEquals("r")) {
+            routing = new Semaphore(0);
         }
     }
 
@@ -86,13 +93,15 @@ public class Graph extends Thread {
     }
 
     public void sendMessage(Node a, Node b) {
+        totalMessages++;
         Message m = new Message(a, b);
-        a.addMessage(m);
+        a.addMessage(m, true);
         lastSent = m;
     }
 
     public void sendMessage(Message m) {
-        m.source.addMessage(m);
+        totalMessages++;
+        m.source.addMessage(m, true);
         lastSent = m;
     }
 
@@ -106,42 +115,41 @@ public class Graph extends Thread {
     }
 
     public Node getRandomNode() {
-        return nodes[r.nextInt(nodes.length)];
+        return nodes.get(r.nextInt(nodes.size()));
     }
 
     public Node getNode(int i) {
-        return nodes[i - 1];
+        return nodes.get(i - 1);
     }
 
     private void draw() {
         Graphics g = c.getGraphics();
         int w = c.getWidth();
         int h = c.getHeight();
-        g.clearRect(0, 0, c.getWidth(), c.getHeight());
-        if (nodes.length > 1000) {
+        g.clearRect(0, 0, w, h);
+        if (nodes.size() > 200 && !forceDisplay) {
             g.setColor(Color.BLACK);
-            g.drawString("Pas d'affichage lorsqu'il y a plus de 1000 noeuds", 10, 10);
+            g.drawString("Pas d'affichage lorsqu'il y a plus de 200 noeuds", 10, 20);
             return;
         }
         Iterator<Node> i = nodesQT.iterator();
         while (i.hasNext()) {
             Node n = i.next();
             for (Node n1 : n.connections) {
-                g.drawLine((int) (n.x / w), (int) (n.y / h), (int) (n1.x / w), (int) (n1.y / h));
+                g.drawLine((int) ((n.x * w) / size), (int) ((n.y * h) / size), (int) ((n1.x * w) / size), (int) ((n1.y * h) / size));
             }
         }
         g.setColor(Color.GRAY);
         i = nodesQT.iterator();
         while (i.hasNext()) {
             Node n = i.next();
-            g.fillOval((int) (n.x / w) - 15, (int) (n.y / h) - 15, 30, 30);
+            g.fillOval((int) ((n.x * w) / size) - 15, (int) ((n.y * h) / size) - 15, 30, 30);
         }
         g.setColor(Color.BLACK);
         i = nodesQT.iterator();
         while (i.hasNext()) {
             Node n = i.next();
-            g.drawString(String.valueOf(n.id), (int) (n.x / w) - 12, (int) (n.y / h) - 12);
-            g.drawString(String.valueOf(n.score), (int) (n.x / w) - 12, (int) (n.y / h) + 2);
+            g.drawString(String.valueOf(n.score), (int) ((n.x * w) / size) - 12, (int) ((n.y * h) / size) + 5);
         }
     }
 
@@ -160,12 +168,27 @@ public class Graph extends Thread {
         for (Node n : nodes) {
             n.start();
         }
+        if (transmissionMode.contentEquals("r")) {
+            try {
+                routing.acquire(nNodes);
+            } catch (InterruptedException ignored) {
+            }
+            for (Node n : nodes) {
+                n.routingSync.release(1);
+            }
+        }
         while (true) {
             draw();
             try {
-                Thread.sleep(50);
+                Thread.sleep(1000);
             } catch (InterruptedException ignored) {
             }
         }
+    }
+
+    public void terminate() {
+        nodes.sort((o1, o2) -> o2.score - o1.score);
+        System.out.println("Gagnant : " + nodes.get(0));
+        System.out.println("taux de perte : " + ((lostMessages * 1.) / totalMessages));
     }
 }

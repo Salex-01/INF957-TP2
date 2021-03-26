@@ -4,14 +4,18 @@ public class Main4 {
     int nNodes = 5;
     double dMax = 1;
     int nMessages = -1;
+    String tMode = "pp";
     Graph g;
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         new Main4(args);
     }
 
+    // [n/nodes <int>] [d/distance <double>] [m/messages <int>] [s/size <double>]
+    // [tm/transmission <"pp","ppnr","ppu","dd","ddnr","ddu","r">] ["fd"/"forcedisplay"]
     Main4(String[] args) {
-        double s = -1;
+        double size = -1;
+        boolean forceDisplay = false;
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
                 case "nodes":
@@ -31,8 +35,17 @@ public class Main4 {
                     break;
                 case "size":
                 case "s":
-                    s = Double.parseDouble(args[i + 1]);
+                    size = Double.parseDouble(args[i + 1]);
                     i++;
+                    break;
+                case "transmission":
+                case "tm":
+                    tMode = args[i + 1];
+                    i++;
+                    break;
+                case "forcedisplay":
+                case "fd":
+                    forceDisplay = true;
                     break;
                 default:
                     System.out.println("Argument inconnu : " + args[i]);
@@ -46,21 +59,24 @@ public class Main4 {
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
         Frame f = new Frame();
         f.setBounds((int) (d.getWidth() * 0.1), (int) (d.getHeight() * 0.1), (int) (d.getWidth() * 0.8), (int) (d.getHeight() * 0.8));
-        f.addWindowListener(new CloserListener(f));
         Container c = new Container();
         c.setBounds(0, 0, f.getWidth(), f.getHeight() - 30);
         f.add(c);
-        System.out.println("Création du graph");
         if (nMessages <= 0) {
             new MessageButtonManual(c, this);
             new MessageButtonRepeat(c, this);
-            new MessageButton1(c, this);
-            new MessageButton10(c, this);
-            new MessageButton100(c, this);
+            new MessageButtonMultiple(c, this, 1);
+            new MessageButtonMultiple(c, this, 10);
+            new MessageButtonMultiple(c, this, 100);
+            new MessageButtonMultiple(c, this, 1000);
+            new MessageButtonMultiple(c, this, 10000);
         }
+        System.out.println("Création du graph");
         long start = System.currentTimeMillis();
-        g = new Graph(nNodes, dMax, s, new GraphCanvas(c, this, nMessages <= 0), nMessages);
+        g = new Graph(nNodes, dMax, size, new GraphCanvas(c, this, nMessages <= 0), nMessages, forceDisplay, tMode);
         System.out.println("Création terminée en " + (System.currentTimeMillis() - start) + " ms");
+        f.addWindowListener(new CloserListener(f, g));
+        f.setVisible(true);
         g.start();
     }
 }

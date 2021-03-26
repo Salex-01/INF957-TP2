@@ -71,7 +71,7 @@ public class QuadTree {
         }
         if (q == null) {
             for (Node n1 : nodes) {
-                if (n1.distance(n) <= d) {
+                if (n1 != n && n1.distance(n) <= d) {
                     result.add(n1);
                 }
             }
@@ -147,7 +147,7 @@ public class QuadTree {
             }
             if (qt.q != null) {
                 initialize();
-                while (!qti[j].hasNext() && j < 4) {
+                while (j < 4 && !qti[j].hasNext()) {
                     j++;
                 }
                 return (j < 4 && qti[j].hasNext());
@@ -164,7 +164,7 @@ public class QuadTree {
             }
             if (qt.q != null) {
                 initialize();
-                while (!qti[j].hasNext() && j < 4) {
+                while (j < 4 && !qti[j].hasNext()) {
                     j++;
                 }
                 if (j >= 4 || !qti[j].hasNext()) {

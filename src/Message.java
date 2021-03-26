@@ -21,6 +21,7 @@ public class Message {
 
     @SuppressWarnings("SynchronizeOnNonFinalField")
     public void rewardPath() {
+        path.removeLast();
         for(Node n:path){
             synchronized (n.score){
                 n.score++;
