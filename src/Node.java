@@ -130,6 +130,10 @@ public class Node extends Thread {
             synchronized (g.routing) {
                 g.routing.release(1);
             }
+            try {
+                routingSync.acquire(1);
+            } catch (InterruptedException ignored) {
+            }
         }
         boolean tem;
         while (true) {
