@@ -5,9 +5,9 @@ import common.CloserListener;
 import java.awt.*;
 
 public class Main4 {
-    int nNodes = 5;
+    int nNodes = 10;
     double dMax = 1;
-    int nMessages = -1;
+    int nMessages = 0;
     String routingAlgorithm = "pp";
     Graph g;
 

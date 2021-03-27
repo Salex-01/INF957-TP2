@@ -13,7 +13,7 @@ public class Graph extends Thread implements Terminable {
     double dMax;    // Distance max pour que 2 noeuds soient connectés
     int nMessages;  // Nombre de messages à envoyer dès le lancement
     QuadTree nodesQT;   // Quadtree des noeuds
-    List<Node> nodes = new ArrayList<>();   // Liste des noeuds (plus rapide à parcourir)
+    final List<Node> nodes = new ArrayList<>();   // Liste des noeuds (plus rapide à parcourir)
     Random r = new Random();
     Message lastSent = null;    // Pour la répétition
     Canvas c;   // Zone d'affichage
@@ -290,12 +290,25 @@ public class Graph extends Thread implements Terminable {
             Thread.sleep(1000);
         } catch (InterruptedException ignored) {
         }
-        // Tri des noeuds par score décroissant
-        nodes.sort((o1, o2) -> o2.score - o1.score);
+        // Récupération du gagnant
+        Node n = getBest();
         // Affichage des résultats
-        JOptionPane.showMessageDialog(null, "Gagnant : " + nodes.get(0) + "\nTaux de perte : " + ((lostMessages * 1.) / totalMessages) + " (" + lostMessages + " sur " + totalMessages + ")");
-        System.out.println("Gagnant : " + nodes.get(0));
+        JOptionPane.showMessageDialog(null, "Gagnant : " + n + "\nTaux de perte : " + ((lostMessages * 1.) / totalMessages) + " (" + lostMessages + " sur " + totalMessages + ")");
+        System.out.println("Gagnant : " + n);
         System.out.println("Taux de perte : " + ((lostMessages * 1.) / totalMessages) + " (" + lostMessages + " sur " + totalMessages + ")");
+    }
+
+    // Retourne le noeud avec le meilleur score
+    private Node getBest() {
+        Node best = nodes.get(0);
+        synchronized (nodes) {
+            for (Node n : nodes) {
+                if (n.score > best.score) {
+                    best = n;
+                }
+            }
+        }
+        return best;
     }
 
     // Active/désactive l'envoi en continu
@@ -310,10 +323,11 @@ public class Graph extends Thread implements Terminable {
 
     // Affichage du tableau des scores
     public void showLeaderboard() {
-        nodes.sort((o1, o2) -> o2.score - o1.score);
+        ArrayList<Node> nCopy = new ArrayList<>(nodes);
+        nCopy.sort((o1, o2) -> o2.score - o1.score);
         StringBuilder s = new StringBuilder();
-        for (int i = 0; (i < 10 && i < nodes.size()); i++) {
-            Node n = nodes.get(i);
+        for (int i = 0; (i < 10 && i < nCopy.size()); i++) {
+            Node n = nCopy.get(i);
             s.append(i + 1).append(": Q4.Node ").append(n.id).append(", score = ").append(n.score).append("\n");
         }
         JOptionPane.showMessageDialog(null, s, "Leaderboard", JOptionPane.PLAIN_MESSAGE);
