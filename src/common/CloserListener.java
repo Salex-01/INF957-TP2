@@ -1,4 +1,4 @@
-package Q1;
+package common;
 
 import java.awt.*;
 import java.awt.event.WindowEvent;
@@ -6,11 +6,11 @@ import java.awt.event.WindowListener;
 
 public class CloserListener implements WindowListener {
     Frame f;
-    PigeonMap m;
+    Terminable t;
 
-    public CloserListener(Frame f1, PigeonMap pm) {
+    public CloserListener(Frame f1, Terminable t1) {
         f = f1;
-        m = pm;
+        t = t1;
     }
 
     @Override
@@ -19,11 +19,7 @@ public class CloserListener implements WindowListener {
 
     @Override
     public void windowClosing(WindowEvent windowEvent) {
-        // permet de stopper le programme quand la fenetre est fermee et d'afficher les scores finaux de chaque pigeon
-        f.dispose();
-        for (Pigeon p : m.pigeonList) {
-            System.out.println(p);
-        }
+        t.terminate();
         System.exit(0);
     }
 

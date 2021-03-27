@@ -14,25 +14,23 @@ public class Mouse implements MouseListener {
         f = f1;
     }
 
+    // Crée de la nourriture aux coordonnées de la souris
     @Override
     public void mouseClicked(MouseEvent mouseEvent) {
-        // cree de la nourriture aux coordonnees de la souris
         map.addFood(mouseEvent.getX(), mouseEvent.getY());
     }
 
     @Override
     public void mousePressed(MouseEvent mouseEvent) {
-
     }
 
     @Override
     public void mouseReleased(MouseEvent mouseEvent) {
-
     }
 
+    // Redimensionne la carte si la fenêtre est redimensionnée
     @Override
     public void mouseEntered(MouseEvent mouseEvent) {
-        // redimensionne la carte si la fenetre est redimentionnee
         map.setBounds(0,0,f.getWidth(),f.getHeight());
         map.height = f.getHeight();
         map.width = f.getWidth();
@@ -40,6 +38,5 @@ public class Mouse implements MouseListener {
 
     @Override
     public void mouseExited(MouseEvent mouseEvent) {
-
     }
 }

@@ -6,18 +6,18 @@ import java.util.Random;
 public class Pigeon extends Thread {
 
     PigeonMap map;
-    // rayon du pigeon
+    // Rayon du pigeon
     double radius;
 
-    // position du pigeon sur la carte
+    // Position du pigeon sur la carte
     double posX;
     double posY;
-    // variable permettant de calculer deltatime
+    // Variables permettant de calculer deltatime
     long timeSinceStart;
     long oldTimeSinceStart;
     double deltatime;
 
-    // score du pigeon suivant de nombre de nourriture mangé
+    // Score du pigeon (dépend de la quantité de nourriture mangée)
     int score = 0;
 
     Random rand;
@@ -27,17 +27,17 @@ public class Pigeon extends Thread {
     Pigeon(PigeonMap map) {
 
         this.map = map;
-        // le rayon depends du rayon de la taille du dessein
+        // Le rayon depend de la taille du pigeon à l'écran
         radius = map.rangePigeon / 2.;
 
-        // ajout du pigeon à la carte des pigeons
+        // Ajout du pigeon à la carte
         map.addPigeon(this);
         rand = new Random();
-        // initialise aleatoirement la position initial
+        // Initialisation aléatoire de la position
         posX = rand.nextInt(map.width + 1);
         posY = rand.nextInt(map.height + 1);
 
-        // initialise le deltatime
+        // Iinitialisation du deltatime
         oldTimeSinceStart = System.nanoTime();
         deltatime = 0;
     }
@@ -47,22 +47,22 @@ public class Pigeon extends Thread {
     public void run() {
         try {
             while (true) {
-                // mise à jour du deltatime
+                // Mise à jour du deltatime
                 timeSinceStart = System.nanoTime();
                 deltatime = (timeSinceStart - oldTimeSinceStart) / Math.pow(10, 7);
                 oldTimeSinceStart = timeSinceStart;
 
-                // si il n'y a pas de nourriture le pigeon attends
+                // Si il n'y a pas de nourriture, le pigeon attend
                 if (map.hasNoFood()) {
-                    System.out.println("no food pigeon is waiting");
+                    System.out.println("no food, pigeon is waiting");
                     synchronized (this) {
                         this.wait();
-                        // reset le timer a la fin du wait
+                        // Reset le timer a la fin du wait
                         timeSinceStart = System.nanoTime();
                         oldTimeSinceStart = timeSinceStart;
                     }
                 } else {
-                    // bouge vers la nourriture la plus fraiche
+                    // Bouge vers la nourriture la plus fraîche
                     this.moveToFreshestFood();
                 }
             }
@@ -72,18 +72,18 @@ public class Pigeon extends Thread {
     }
 
     void moveToFreshestFood() {
-        // recupere la nourriture la plus fraiche de la carte
+        // Récupère la nourriture la plus fraîche de la carte
         Food freshestFood = map.getFreshestFood();
 
         if (freshestFood != null) {
-            // deplace le pigeon si la nourriture n'est pas nulle
+            // Déplace le pigeon vers la nourriture si il y en a
             double magnitude = Math.sqrt(Math.pow(this.posX - freshestFood.x, 2) + Math.pow(this.posY - freshestFood.y, 2));
             this.posX += (Math.abs(deltatime * (freshestFood.x - this.posX) / magnitude) > Math.abs(freshestFood.x - this.posX) ?
                     (freshestFood.x - this.posX) : (deltatime * (freshestFood.x - this.posX) / magnitude));
             this.posY += (Math.abs(deltatime * (freshestFood.y - this.posY) / magnitude) > Math.abs(freshestFood.y - this.posY) ?
                     (freshestFood.y - this.posY) : (deltatime * (freshestFood.y - this.posY) / magnitude));
             if (magnitude < radius) {
-                // si le pigeon est assez proche il peut manger la nourriture
+                // Si le pigeon est assez proche, il essaye de manger la nourriture
                 this.eatFood(freshestFood);
             }
         }
@@ -91,13 +91,14 @@ public class Pigeon extends Thread {
 
     void eatFood(Food food) {
         if (map.deleteFood(food)) {
-            // si la nourriture est bien suprimée alors le score du pigeon augmente de 1
+            // Si le pigeon a eu la nourriture, son score augmente de 1
             score++;
             System.out.println(this);
         }
     }
 
-    // fonction pour faire "peur" au pigeon, il choisit une nouvelle possition aleatoire sur la carte
+    // Fonction pour faire "peur" au pigeon,
+    // Déplace le pigeon à une nouvelle position aléatoire
     void scare() {
         posX = rand.nextInt(map.width + 1);
         posY = rand.nextInt(map.height + 1);

@@ -1,12 +1,14 @@
 package Q4;
 
+import common.Terminable;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.Semaphore;
 
-public class Graph extends Thread {
+public class Graph extends Thread implements Terminable {
     int nNodes; // Nombre de noeuds
     double dMax;    // Distance max pour que 2 noeuds soient connectés
     int nMessages;  // Nombre de messages à envoyer dès le lancement
