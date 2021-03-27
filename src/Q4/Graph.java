@@ -287,7 +287,7 @@ public class Graph extends Thread implements Terminable {
         stopContinuous();
         // Attente de l'arrivée des derniers messages
         try {
-            Thread.sleep(1000);
+            Thread.sleep(nNodes);
         } catch (InterruptedException ignored) {
         }
         // Récupération du gagnant
@@ -328,7 +328,7 @@ public class Graph extends Thread implements Terminable {
         StringBuilder s = new StringBuilder();
         for (int i = 0; (i < 10 && i < nCopy.size()); i++) {
             Node n = nCopy.get(i);
-            s.append(i + 1).append(": Q4.Node ").append(n.id).append(", score = ").append(n.score).append("\n");
+            s.append(i + 1).append(": Node ").append(n.id).append(", score = ").append(n.score).append("\n");
         }
         JOptionPane.showMessageDialog(null, s, "Leaderboard", JOptionPane.PLAIN_MESSAGE);
     }

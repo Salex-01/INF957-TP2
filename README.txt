@@ -1,5 +1,3 @@
 INF957-TP2
-
 Sacha Guyot GUYS07119908
-
 Alan Guivarch GUIA24119800

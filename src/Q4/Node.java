@@ -208,13 +208,13 @@ public class Node extends Thread {
                     if (next != null) {
                         next.addMessage(m, false);
                     } else {    // Sinon, le message est bloqué
-                        System.out.println("Q4.Message " + m.id + " bloqué dans le noeud " + this.id);
+                        System.out.println("Message " + m.id + " bloqué dans le noeud " + this.id);
                         synchronized (g.lostMessages) {
                             g.lostMessages++;
                         }
                     }
                 } else {    // Sinon, le message est bloqué
-                    System.out.println("Q4.Message " + m.id + " perdu dans le noeud " + this.id);
+                    System.out.println("Message " + m.id + " perdu dans le noeud " + this.id);
                     synchronized (g.lostMessages) {
                         g.lostMessages++;
                     }
@@ -316,7 +316,7 @@ public class Node extends Thread {
 
     @Override
     public String toString() {
-        return "Q4.Node " + id + ", score = " + score + ", position = " + x + "," + y;
+        return "Node " + id + ", score = " + score + ", position = " + x + "," + y;
     }
 
     private static class RoutingMessage {

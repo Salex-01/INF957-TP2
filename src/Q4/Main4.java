@@ -76,7 +76,7 @@ public class Main4 {
         }
         // Création de la fenêtre
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-        Frame f = new Frame("Q4.Graph Mailer");
+        Frame f = new Frame("Graph Mailer");
         f.setBounds((int) (d.getWidth() * 0.1), (int) (d.getHeight() * 0.1), (int) (d.getWidth() * 0.8), (int) (d.getHeight() * 0.8));
         Container c = new Container();
         c.setBounds(0, 0, f.getWidth() - 10, f.getHeight() - 30);
