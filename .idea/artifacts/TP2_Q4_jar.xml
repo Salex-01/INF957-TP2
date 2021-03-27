@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="TP2_Q4:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/TP2_Q4_jar</output-path>
+    <root id="archive" name="TP2.jar">
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/src/Q4/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="module-output" name="TP2" />
+    </root>
+  </artifact>
+</component>
