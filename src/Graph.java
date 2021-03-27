@@ -169,25 +169,24 @@ public class Graph extends Thread {
             g.drawString("Pas d'affichage lorsqu'il y a plus de 200 noeuds", 10, 20);
             return;
         }
-        Iterator<Node> i = nodesQT.iterator();
-        while (i.hasNext()) {
-            Node n = i.next();
+        HashMap<Node, Pair<Integer, Integer>> displayCoordinates = new HashMap<>();
+        for (Node n : nodes) {
+            Pair<Integer, Integer> p = displayCoordinates.computeIfAbsent(n, node -> new Pair<>((int) (((n.x - minDX) * w) / displayW + 0.0455 * w), (int) (((n.y - minDY) * h) / displayH + 0.0455 * h)));
             for (Node n1 : n.connections) {
-                g.drawLine((int) (((n.x - minDX) * w) / displayW + 0.0455 * w), (int) (((n.y - minDY) * h) / displayH + 0.0455 * h), (int) (((n1.x - minDX) * w) / displayW + 0.0455 * w), (int) (((n1.y - minDY) * h) / displayH + 0.0455 * h));
+                Pair<Integer, Integer> p1 = displayCoordinates.computeIfAbsent(n1, node -> new Pair<>((int) (((n1.x - minDX) * w) / displayW + 0.0455 * w), (int) (((n1.y - minDY) * h) / displayH + 0.0455 * h)));
+                g.drawLine(p.key, p.value, p1.key, p1.value);
             }
         }
         g.setColor(Color.GRAY);
-        i = nodesQT.iterator();
-        while (i.hasNext()) {
-            Node n = i.next();
-            g.fillOval((int) (((n.x - minDX) * w) / displayW + 0.0455 * w) - 15, (int) (((n.y - minDY) * h) / displayH + 0.0455 * h) - 15, 30, 30);
+        for (Node n : nodes) {
+            Pair<Integer, Integer> p = displayCoordinates.get(n);
+            g.fillOval(p.key - 15, p.value - 15, 30, 30);
         }
         g.setColor(Color.BLACK);
-        i = nodesQT.iterator();
-        while (i.hasNext()) {
-            Node n = i.next();
-            g.drawString(String.valueOf(n.id), (int) (((n.x - minDX) * w) / displayW + 0.0455 * w) - 4 * (Math.max(0, (int) Math.log10(n.id)) + 1), (int) (((n.y - minDY) * h) / displayH + 0.0455 * h) - 2);
-            g.drawString(String.valueOf(n.score), (int) (((n.x - minDX) * w) / displayW + 0.0455 * w) - 4 * (Math.max(0, (int) Math.log10(n.score)) + 1), (int) (((n.y - minDY) * h) / displayH + 0.0455 * h) + 12);
+        for (Node n : nodes) {
+            Pair<Integer, Integer> p = displayCoordinates.get(n);
+            g.drawString(String.valueOf(n.id), p.key - 4 * (Math.max(0, (int) Math.log10(n.id)) + 1), p.value - 2);
+            g.drawString(String.valueOf(n.score), p.key - 4 * (Math.max(0, (int) Math.log10(n.score)) + 1), p.value + 12);
         }
     }
 
@@ -239,6 +238,11 @@ public class Graph extends Thread {
     }
 
     public void terminate() {
+        stopContinuous();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ignored) {
+        }
         nodes.sort((o1, o2) -> o2.score - o1.score);
         JOptionPane.showMessageDialog(null, "Gagnant : " + nodes.get(0) + "\nTaux de perte : " + ((lostMessages * 1.) / totalMessages) + " (" + lostMessages + " sur " + totalMessages + ")");
         System.out.println("Gagnant : " + nodes.get(0));

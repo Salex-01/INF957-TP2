@@ -2,7 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
-public class MessageButtonRepeat extends MessageButton {
+public class MessageButtonRepeat extends GraphButton {
     public MessageButtonRepeat(Container c1, Main4 m) {
         super(c1, m, 1);
         setLabel("Renvoyer");

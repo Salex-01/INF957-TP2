@@ -17,7 +17,6 @@ public class CloserListener implements WindowListener {
 
     @Override
     public void windowClosing(WindowEvent event) {
-        g.stopContinuous();
         g.terminate();
         System.exit(0);
     }

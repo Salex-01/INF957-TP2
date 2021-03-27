@@ -1,7 +1,7 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
-public class MessageButtonMultiple extends MessageButton {
+public class MessageButtonMultiple extends GraphButton {
     int n;
 
     public MessageButtonMultiple(Container c1, Main4 m, int n1) {

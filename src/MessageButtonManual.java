@@ -2,7 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
-public class MessageButtonManual extends MessageButton {
+public class MessageButtonManual extends GraphButton {
     public MessageButtonManual(Container c1, Main4 m) {
         super(c1, m, 0);
         setLabel("Envoi manuel");

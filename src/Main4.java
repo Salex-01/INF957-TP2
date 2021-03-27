@@ -60,8 +60,9 @@ public class Main4 {
         Frame f = new Frame("Graph Mailer");
         f.setBounds((int) (d.getWidth() * 0.1), (int) (d.getHeight() * 0.1), (int) (d.getWidth() * 0.8), (int) (d.getHeight() * 0.8));
         Container c = new Container();
-        c.setBounds(0, 0, f.getWidth(), f.getHeight() - 30);
+        c.setBounds(0, 0, f.getWidth() - 10, f.getHeight() - 30);
         f.add(c);
+        f.addComponentListener(new ResizeListener(c, f));
         if (nMessages <= 0) {
             new MessageButtonManual(c, this);
             new MessageButtonRepeat(c, this);
@@ -70,12 +71,12 @@ public class Main4 {
             new MessageButtonMultiple(c, this, 100);
             new MessageButtonMultiple(c, this, 1000);
             new MessageButtonMultiple(c, this, 10000);
-            new MessageButtonContinuous(c,this);
-            new LeaderboardButton(c,this);
+            new MessageButtonContinuous(c, this);
+            new LeaderboardButton(c, this);
         }
         System.out.println("Création du graph");
         long start = System.currentTimeMillis();
-        g = new Graph(nNodes, dMax, size, new GraphCanvas(c, this, nMessages <= 0), nMessages, forceDisplay, tMode);
+        g = new Graph(nNodes, dMax, size, new GraphCanvas(c), nMessages, forceDisplay, tMode);
         System.out.println("Création terminée en " + (System.currentTimeMillis() - start) + " ms");
         f.addWindowListener(new CloserListener(f, g));
         f.setVisible(true);

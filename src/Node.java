@@ -14,7 +14,6 @@ public class Node extends Thread {
     String transmissionMode;
     HashMap<Node, Pair<Node, Double>> routingTable;
     private final LinkedList<RoutingMessage> routingMessages = new LinkedList<>();
-    private final Semaphore routingMessagesSync = new Semaphore(1);
     Semaphore routingSync;
 
     public Node(Graph g1, int ID, double x1, double y1, int nN, String tm) {
