@@ -1,3 +1,5 @@
+package Q4;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
@@ -263,7 +265,7 @@ public class Graph extends Thread {
         StringBuilder s = new StringBuilder();
         for (int i = 0; (i < 10 && i < nodes.size()); i++) {
             Node n = nodes.get(i);
-            s.append(i + 1).append(": Node ").append(n.id).append(", score = ").append(n.score).append("\n");
+            s.append(i + 1).append(": Q4.Node ").append(n.id).append(", score = ").append(n.score).append("\n");
         }
         JOptionPane.showMessageDialog(null, s, "Leaderboard", JOptionPane.PLAIN_MESSAGE);
     }

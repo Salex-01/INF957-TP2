@@ -1,3 +1,5 @@
+package Q4;
+
 import java.awt.*;
 
 public class Main4 {
@@ -57,7 +59,7 @@ public class Main4 {
             System.exit(-1);
         }
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-        Frame f = new Frame("Graph Mailer");
+        Frame f = new Frame("Q4.Graph Mailer");
         f.setBounds((int) (d.getWidth() * 0.1), (int) (d.getHeight() * 0.1), (int) (d.getWidth() * 0.8), (int) (d.getHeight() * 0.8));
         Container c = new Container();
         c.setBounds(0, 0, f.getWidth() - 10, f.getHeight() - 30);
