@@ -6,17 +6,15 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 public class QuadTree {
-    int level;
-    double x;
-    double y;
-    double w;
-    double h;
-    double dMax;
-    QuadTree[] q;
-    LinkedList<Node> nodes = new LinkedList<>();
+    double x;   //
+    double y;   // Position et taille
+    double w;   //
+    double h;   //
+    double dMax;    // Distance maximale pour que 2 noeuds soient connectés
+    QuadTree[] q;   // Niveau inférieur
+    LinkedList<Node> nodes = new LinkedList<>();    // Noeuds contenus par ce niveau
 
-    public QuadTree(int l, double x1, double y1, double w1, double h1, double d) {
-        level = l;
+    public QuadTree(double x1, double y1, double w1, double h1, double d) {
         x = x1;
         y = y1;
         w = w1;
@@ -25,28 +23,31 @@ public class QuadTree {
     }
 
     public void add(Node n) {
+        // Si ce quadtree n'a pas de niveau inférieur
         if (q == null) {
             nodes.add(n);
-            if (nodes.size() > 100 && level > 0) {
+            // Si il y a plus de 100 noeuds dans ce quadtree
+            if (nodes.size() > 100) {
+                // Création du niveau inférieur
                 q = new QuadTree[4];
-                q[0] = new QuadTree(level - 1, x, y, w / 2, h / 2, dMax);
-                q[1] = new QuadTree(level - 1, x + w / 2, y, w / 2, h / 2, dMax);
-                q[2] = new QuadTree(level - 1, x, y + h / 2, w / 2, h / 2, dMax);
-                q[3] = new QuadTree(level - 1, x + w / 2, y + h / 2, w / 2, h / 2, dMax);
+                q[0] = new QuadTree(x, y, w / 2, h / 2, dMax);
+                q[1] = new QuadTree(x + w / 2, y, w / 2, h / 2, dMax);
+                q[2] = new QuadTree(x, y + h / 2, w / 2, h / 2, dMax);
+                q[3] = new QuadTree(x + w / 2, y + h / 2, w / 2, h / 2, dMax);
+                // Transfert des noeuds de ce niveau vers le niveau inférieur
                 while (nodes.size() > 0) {
                     addToSubLevel(nodes.remove(0));
                 }
-            } else {
-                List<Node> acc = accessible(n);
-                for (Node n1 : acc) {
-                    n.connect(n1);
-                }
+            } else {    // Sinon
+                // Connexion du nouveau noeud à tous les noeuds accessibles
+                n.connect(accessible(n));
             }
-        } else {
-            addToSubLevel(n);
+        } else {    // Sinon
+            addToSubLevel(n);   // Ajout du noeud au niveau inférieur
         }
     }
 
+    // Ajoute le noeud dans le bon quadtree du niveau inférieur
     private void addToSubLevel(Node n) {
         if (n.x < x + w / 2) {
             if (n.y < y + h / 2) {
@@ -63,21 +64,26 @@ public class QuadTree {
         }
     }
 
+    // Liste des noeuds assez proche de n pour s'y connecter
     public List<Node> accessible(Node n) {
         return accessible(n, new LinkedList<>(), dMax);
     }
 
     private List<Node> accessible(Node n, List<Node> result, double d) {
+        // Si le noeud est trop loin de ce quadtree pour se connecter à ses noeuds
         if (n.x < x - d || n.x > x + w + d || n.y < y - d || n.y > y + h + d) {
             return result;
         }
+        // Si ce quadtree n'a pas de niveau inférieur
         if (q == null) {
+            // Ajout à la liste de retour de tous les noeuds assez proches de n pour s'y connecter
             for (Node n1 : nodes) {
                 if (n1 != n && n1.distance(n) <= d) {
                     result.add(n1);
                 }
             }
-        } else {
+        } else {    // Sinon
+            // Appel récursif sur le niveau inférieur
             for (int i = 0; i < 4; i++) {
                 q[i].accessible(n, result, d);
             }
@@ -85,17 +91,21 @@ public class QuadTree {
         return result;
     }
 
+    // Déplace un noeud
     public boolean moveNode(Node n, double x1, double y1, boolean moveTo) {
+        // Si ce quadtree n'a pas de niveau inférieur
         if (q == null) {
-            remove(n);
-            n.move(x1, y1, moveTo);
+            remove(n);  // On le retire du graph
+            n.move(x1, y1, moveTo); // On le déplace
+            // Si le déplacement l'a fait sortir de ce quadtree
             if (n.x < x || n.x > x + w || n.y < y || n.y > y + h) {
                 return true;
-            } else {
-                add(n);
+            } else {    // Sinon
+                add(n); // On le remet à sa place dans ce quadtree
                 return false;
             }
-        } else {
+        } else {    // Sinon
+            // On détermine dans quel quadtree du niveau inférieur il se trouve
             QuadTree qt;
             if (n.x < x + w / 2) {
                 if (n.y < y + h / 2) {
@@ -110,11 +120,14 @@ public class QuadTree {
                     qt = q[3];
                 }
             }
+            // Appel récursif sur le niveau inférieur
+            // Si le déplacement a fait sortir le noeud du quadtree de niveau inférieur
             if (qt.moveNode(n, x1, y1, moveTo)) {
+                // Si le déplacement a fait sortir le noeud de ce quadtree
                 if (n.x < x || n.x > x + w || n.y < y || n.y > y + h) {
                     return true;
-                } else {
-                    add(n);
+                } else {    // Sinon
+                    add(n); // On le remet à sa place dans ce quadtree
                     return false;
                 }
             } else {
@@ -123,18 +136,20 @@ public class QuadTree {
         }
     }
 
+    // Retire un noeud du graph et de ce quadtree
     private void remove(Node n) {
         n.disconnect();
         nodes.remove(n);
     }
 
-    public QTIterator iterator() {
+    public Iterator<Node> iterator() {
         return new QTIterator(this);
     }
 
+    // Iterator de QuadTree
     private static class QTIterator implements Iterator<Node> {
         QuadTree qt;
-        QTIterator[] qti = new QTIterator[4];
+        Iterator<Node>[] qti = new QTIterator[4];
         int i = 0;
         int j = 0;
 
@@ -169,7 +184,7 @@ public class QuadTree {
                 while (j < 4 && !qti[j].hasNext()) {
                     j++;
                 }
-                if (j >= 4 || !qti[j].hasNext()) {
+                if (j >= 4) {
                     throw new NoSuchElementException();
                 }
                 return qti[j].next();

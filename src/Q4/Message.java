@@ -5,8 +5,8 @@ import java.util.LinkedList;
 public class Message {
     Node source;
     Node destination;
-    LinkedList<Node> path = new LinkedList<>();
-    int age = 0;
+    LinkedList<Node> path = new LinkedList<>(); // Liste des noeuds traversés par le message
+    int age = 0;    // Pour arrêter les messages bloqués dans un trou noir
     static long index = 0;
     long id = index++;
 
@@ -21,6 +21,7 @@ public class Message {
         destination = m.destination;
     }
 
+    // Augmentation du score de tous les noeuds traversés
     @SuppressWarnings("SynchronizeOnNonFinalField")
     public void rewardPath() {
         path.removeLast();

@@ -2,6 +2,7 @@ package Q4;
 
 import java.awt.*;
 
+// Zone de tracé du graph
 public class GraphCanvas extends Canvas implements GraphComponent {
     Container c;
 

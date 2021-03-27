@@ -3,7 +3,7 @@ package Q4;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
-public class MessageButtonMultiple extends GraphButton {
+public class MessageButtonMultiple extends MessageButton {
     int n;
 
     public MessageButtonMultiple(Container c1, Main4 m, int n1) {
@@ -14,6 +14,8 @@ public class MessageButtonMultiple extends GraphButton {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        setBackground(Color.BLACK);
         sendMessages(n, -1, -1);
+        setBackground(Color.GRAY);
     }
 }
